@@ -71,7 +71,11 @@ class LcovCobertura(object):
             excludes = []
         self.lcov_data = lcov_data
         self.base_dir = base_dir
-        self.excludes = excludes
+        if type(excludes[0]) == str:
+            self.excludes = excludes[0].split(',')
+        else:
+            self.excludes = excludes
+       
         if demangle:
             demangler = Demangler()
             self.format = demangler.demangle
@@ -202,8 +206,13 @@ class LcovCobertura(object):
                 file_methods[function_name][-1] = function_hits
 
         # Exclude packages
-        excluded = [x for x in coverage_data['packages'] for e in self.excludes
-                    if re.match(e, x)]
+
+        excluded = []
+        for x in coverage_data['packages']:
+            for e in self.excludes:
+                if re.match(e.strip(), x):
+                   excluded.append(x)
+
         for package in excluded:
             del coverage_data['packages'][package]
 
